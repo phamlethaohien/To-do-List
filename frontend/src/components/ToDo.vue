@@ -2,6 +2,32 @@
   <v-container>
     <v-row>
       <v-col cols="12">
+        <v-form ref="form" lazy-validation>
+          <v-text-field v-model="newTodo.title" :counter="64" :rules="newTodo.titleRules" label="Title" required></v-text-field>
+
+          <v-textarea v-model="newTodo.description" label="Description"></v-textarea>
+
+          <v-checkbox label="Done!" v-model="newTodo.is_complete"
+            required></v-checkbox>
+
+          <v-col cols="1">
+            <div class="d-flex">
+              <v-btn color="success" class="mr-4" block :disabled="!newTodo.title" @click="add">
+                Add
+              </v-btn>
+  
+              <v-btn color="error" class="mr-4" block @click="reset">
+                Clear
+              </v-btn>
+            </div>
+
+          </v-col>
+        </v-form>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col cols="12">
         <v-list shaped>
           <v-list-item-group color="deep-orange" v-model="selected" multiple>
             <v-list-item v-for="item in todoList" :value="item" :key="item.id">
@@ -38,19 +64,40 @@ import axios from "axios";
 
 export default {
   data: () => ({
+    newTodo: {
+      title: "",
+      titleRules: [
+        (v) => !!v || "Title is required",
+        (v) => (v && v.length <= 64) || "Title must be less than 64 characters",
+      ],
+      description: "",
+      is_complete: false,
+      user: 1,
+    },
     selected: [],
     todoList: [],
+    url: "http://127.0.0.1:8000/api/todo/",
   }),
   mounted() {
     this.getTodos();
   },
   methods: {
     getTodos() {
-      axios.get("http://127.0.0.1:8000/api/todo/").then((response) => {
+      axios.get(this.url).then((response) => {
         this.todoList = response.data;
         console.log(this.todoList);
       });
     },
+    reset() {
+      this.$refs.form.reset();
+    },
+    add() {
+      var data = this.newTodo;
+      axios.post(this.url, data).then((response) => {
+        console.log(response);
+        this.getTodos();
+      });
+    }
   },
 
 }
