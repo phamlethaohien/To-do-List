@@ -1,3 +1,22 @@
-from django.shortcuts import render
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets, filters
 
-# Create your views here.
+from .models import TODO
+from .serializers import TODOSerializer
+
+class TODOViewSet(viewsets.ModelViewSet):
+
+    queryset = TODO.objects.all()
+    serializer_class = TODOSerializer
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+    ]
+    filter_set_fields = (
+        "title", "user", "is_complete"
+    )
+    search_fields = ("title")
+    ordering_fields = (
+        "is_complete", "created_at", "updated_at"
+    )
