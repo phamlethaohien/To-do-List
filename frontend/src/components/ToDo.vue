@@ -14,7 +14,7 @@
             <div class="d-flex">
               <v-btn color="success" class="mr-4" block :disabled="!newTodo.title" @click="add">
                 Add
-              </v-btn>
+              </v-btn>  
   
               <v-btn color="error" class="mr-4" block @click="reset">
                 Clear
@@ -27,10 +27,11 @@
     </v-row>
 
     <v-row>
-      <v-col cols="12">
-        <v-list shaped>
+      <v-col cols="12" v-if="todoList.length">
+        <h3>To-do List: </h3>
+        <v-list>
           <v-list-item-group color="deep-orange" v-model="selected" multiple>
-            <v-list-item v-for="item in todoList" :value="item" :key="item.id">
+            <v-list-item v-for="item in todoList" :value="item" :key="item.id" @click="update(item)">
 
               <v-list-item-icon>
                 {{ item.id }}
@@ -83,9 +84,11 @@ export default {
   },
   methods: {
     getTodos() {
-      axios.get(this.url).then((response) => {
+      axios.get(`${this.url}?ordering=is_complete`).then((response) => {
         this.todoList = response.data;
-        console.log(this.todoList);
+        response.data.forEach((element, index) => {
+          if (!element.is_complete) this.selected.push(index);
+        });
       });
     },
     reset() {
@@ -94,6 +97,17 @@ export default {
     add() {
       var data = this.newTodo;
       axios.post(this.url, data).then((response) => {
+        console.log(response);
+        this.getTodos();
+      });
+    },
+    update(item) {
+      item.is_complete = !item.is_complete;
+      const url = `${this.url}${item.id}/`;
+      var data = {
+        is_complete: item.is_complete,
+      };
+      axios.patch(url, data).then((response) => {
         console.log(response);
         this.getTodos();
       });
